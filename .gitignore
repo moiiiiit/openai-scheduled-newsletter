@@ -1,0 +1,17 @@
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+.venv/
+
+# Test and coverage outputs
+.pytest_cache/
+.coverage
+
+# OS generated files
+*.DS_Store
+Thumbs.db
+
+# IDE/editor files
+.vscode/
+.idea/
+k8s/secrets.yaml

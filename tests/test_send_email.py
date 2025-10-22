@@ -2,7 +2,7 @@ import dotenv
 dotenv.load_dotenv(dotenv_path=".env.test")
 import pytest
 import smtplib
-from openai_daily_newsletter.send_email import send_email
+from openai_scheduled_newsletter.send_email import send_email
 
 def test_send_email_function_exists():
     assert callable(send_email)

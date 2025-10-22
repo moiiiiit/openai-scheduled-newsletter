@@ -1,4 +1,4 @@
-# OpenAI Daily Newsletter
+# OpenAI Scheduled Newsletter
 
 This project generates a weekly technical digest of Electric Vehicle (EV) technology news using OpenAI's API.
 

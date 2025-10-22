@@ -4,9 +4,9 @@ import schedule
 import datetime
 import datetime
 import pytest
-from openai_daily_newsletter import main
-from openai_daily_newsletter import main as main_mod
-import openai_daily_newsletter.generate_newsletters as gn
+from openai_scheduled_newsletter import main
+from openai_scheduled_newsletter import main as main_mod
+import openai_scheduled_newsletter.generate_newsletters as gn
 
 def test_job_scheduled():
     schedule.clear()

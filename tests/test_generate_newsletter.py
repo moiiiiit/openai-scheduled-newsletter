@@ -1,7 +1,7 @@
 import dotenv
 dotenv.load_dotenv(dotenv_path=".env.test")
 import pytest
-from openai_daily_newsletter import generate_newsletters
+from openai_scheduled_newsletter import generate_newsletters
 import json
 
 def test_api_key_loading():

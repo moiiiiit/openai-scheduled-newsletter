@@ -13,4 +13,4 @@ RUN poetry run pytest --maxfail=1 --disable-warnings
 
 FROM test-only AS prod
 WORKDIR /app
-CMD ["poetry", "run", "python", "-m", "openai_daily_newsletter.main"]
+CMD ["poetry", "run", "python", "-m", "openai_scheduled_newsletter.main"]

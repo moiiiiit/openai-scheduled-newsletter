@@ -4,4 +4,4 @@
 PYTHON=$(which python3 || which python)
 
 # Run main.py with --run-now option
-exec "$PYTHON" -m openai_daily_newsletter.main --run-now
+exec "$PYTHON" -m openai_scheduled_newsletter.main --run-now

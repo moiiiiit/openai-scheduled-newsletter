@@ -26,6 +26,9 @@ apply-manifests:
 	sudo microk8s kubectl apply -f k8s/secrets.yaml 2>&1
 	sudo microk8s kubectl rollout restart deployment openai-newsletter 2>&1
 
+test:
+	poetry run ptw
+
 run:
 	-make cleanup-pods
 	make build

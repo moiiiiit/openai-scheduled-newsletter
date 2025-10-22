@@ -8,9 +8,9 @@ authors = ["Mohit Bhole <mohitb.steam@gmail.com>"]
 python = ">=3.10"
 PyYAML = "*"
 requests = "*"
-schedule = "*"
 python-dotenv = "*"
 openai = "^2.6.0"
+croniter = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
@@ -26,7 +26,6 @@ description = ""
 authors = [{name = "Mohit Bhole",email = "mohitb.steam@gmail.com"}]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["PyYAML", "requests", "schedule", "pytest", "python-dotenv", "openai"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

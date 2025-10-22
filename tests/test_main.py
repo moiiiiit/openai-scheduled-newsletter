@@ -24,16 +24,15 @@ def test_job_runs(monkeypatch):
     def dummy_send_email(subject, body, sender_email, bcc_emails):
         sent.append((subject, body, sender_email, bcc_emails))
 
-    # Patch OpenAI client
     class DummyResponse:
         def json(self):
             return {"result": "mocked"}
-    class DummyCompletions:
+    class DummyResponses:
         def create(self, *args, **kwargs):
             return DummyResponse()
-    class DummyChat:
-        completions = DummyCompletions()
-    monkeypatch.setattr(gn, "client", type("DummyClient", (), {"chat": DummyChat()})())
+    class DummyClient:
+        responses = DummyResponses()
+    monkeypatch.setattr("openai_scheduled_newsletter.generate_newsletters.OpenAI", lambda *args, **kwargs: DummyClient())
 
     main_mod.generate_newsletters = gn.generate_newsletters
     main_mod._sender_email = "sender@example.com"

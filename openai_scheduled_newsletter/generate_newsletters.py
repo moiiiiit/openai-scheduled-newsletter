@@ -6,7 +6,6 @@ import requests
 import os
 from openai import OpenAI
 
-
 STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
 
 def load_api_key():
@@ -14,7 +13,6 @@ def load_api_key():
     if not api_key:
         raise ValueError("OPENAI_API_KEY not found in environment variables")
     return api_key
-client = OpenAI(api_key=load_api_key(), base_url="https://api.openai.com")
 
 def load_prompts():
     prompts_json = os.environ.get('PROMPTS_JSON')
@@ -24,6 +22,7 @@ def load_prompts():
 
 def call_openai_api(api_key, model, prompt):
     try:
+        client = OpenAI(api_key=api_key, base_url="https://api.openai.com")
         response = client.responses.create(
             model=model,
             input=prompt

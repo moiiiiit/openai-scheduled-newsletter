@@ -1,12 +1,12 @@
 cleanup-pods:
-	microk8s kubectl scale deployment deepseek-newsletter --replicas=0 2>&1
-	microk8s kubectl delete pods -l app=deepseek-newsletter --ignore-not-found 2>&1
-	microk8s kubectl delete deployment deepseek-newsletter --ignore-not-found 2>&1
+	microk8s kubectl scale deployment openai-newsletter --replicas=0 2>&1
+	microk8s kubectl delete pods -l app=openai-newsletter --ignore-not-found 2>&1
+	microk8s kubectl delete deployment openai-newsletter --ignore-not-found 2>&1
 
 build:
-	docker build --target prod -t deepseek-newsletter:latest . 2>&1
-	docker tag deepseek-newsletter:latest localhost:32000/deepseek-newsletter:latest 2>&1
-	docker push localhost:32000/deepseek-newsletter:latest 2>&1
+	docker build --target prod -t openai-newsletter:latest . 2>&1
+	docker tag openai-newsletter:latest localhost:32000/openai-newsletter:latest 2>&1
+	docker push localhost:32000/openai-newsletter:latest 2>&1
 
 purge:
 	sudo rm -rf /var/snap/microk8s/common/registry 2>&1
@@ -24,7 +24,7 @@ apply-manifests:
 	sudo microk8s kubectl apply -f k8s/deployment.yaml 2>&1
 	sudo microk8s kubectl apply -f k8s/service.yaml 2>&1
 	sudo microk8s kubectl apply -f k8s/secrets.yaml 2>&1
-	sudo microk8s kubectl rollout restart deployment deepseek-newsletter 2>&1
+	sudo microk8s kubectl rollout restart deployment openai-newsletter 2>&1
 
 run:
 	-make cleanup-pods

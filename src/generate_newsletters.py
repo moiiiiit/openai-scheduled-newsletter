@@ -10,11 +10,11 @@ from openai import OpenAI
 STATIC_DIR = os.path.join(os.path.dirname(__file__), 'static')
 
 def load_api_key():
-    api_key = os.environ.get('DEEPSEEK_API_KEY')
+    api_key = os.environ.get('OPENAI_API_KEY')
     if not api_key:
-        raise ValueError("DEEPSEEK_API_KEY not found in environment variables")
+        raise ValueError("OPENAI_API_KEY not found in environment variables")
     return api_key
-client = OpenAI(api_key=load_api_key(), base_url="https://api.deepseek.com")
+client = OpenAI(api_key=load_api_key(), base_url="https://api.openai.com")
 
 def load_prompts():
     prompts_json = os.environ.get('PROMPTS_JSON')
@@ -22,7 +22,7 @@ def load_prompts():
         raise ValueError("PROMPTS_JSON not found in environment variables")
     return json.loads(prompts_json)
 
-def call_deepseek_api(api_key, model, prompt):
+def call_openai_api(api_key, model, prompt):
     try:
         response = client.chat.completions.create(
             model=model,
@@ -34,7 +34,7 @@ def call_deepseek_api(api_key, model, prompt):
         )
         return response.json()
     except Exception as e:
-        logger.error(f"Deepseek API call failed: {e}")
+        logger.error(f"OpenAI API call failed: {e}")
         return {"error": str(e)}
 
 
@@ -47,7 +47,7 @@ def generate_newsletters(send_email_func, sender_email, bcc_emails):
         prompt = item['prompt']
         logger.info(f"Generating newsletter for model={model}")
         try:
-            result = call_deepseek_api(api_key, model, prompt)
+            result = call_openai_api(api_key, model, prompt)
         except Exception as e:
             logger.error(f"Error for model={model}: {e}")
             result = {"error": str(e)}

@@ -1,7 +1,7 @@
 import dotenv
 dotenv.load_dotenv(dotenv_path=".env.test")
 import pytest
-from deepseek_daily_newsletter import generate_newsletters
+from openai_daily_newsletter import generate_newsletters
 import json
 
 def test_api_key_loading():
@@ -42,7 +42,7 @@ def test_generate_newsletters(monkeypatch):
     monkeypatch.setattr(generate_newsletters, "client", type("DummyClient", (), {"chat": DummyChat()})())
     monkeypatch.setenv("PROMPTS_JSON", json.dumps(prompts))
     monkeypatch.setenv("SENDER_EMAIL", "sender@example.com")
-    monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-testkey")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-testkey")
     generate_newsletters.generate_newsletters(dummy_send_email, "sender@example.com", ["a@example.com"])
     assert len(sent) == 2
     assert sent[0][0].startswith("Newsletter for model:")

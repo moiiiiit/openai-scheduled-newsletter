@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "deepseek-daily-newsletter"
+name = "openai-daily-newsletter"
 version = "0.1.0"
 description = ""
 authors = ["Mohit Bhole <mohitb.steam@gmail.com>"]
@@ -20,7 +20,7 @@ pytest-watch = "^4.2.0"
 optional = true
 
 [project]
-name = "deepseek-daily-newsletter"
+name = "openai-daily-newsletter"
 version = "0.1.0"
 description = ""
 authors = [{name = "Mohit Bhole",email = "mohitb.steam@gmail.com"}]

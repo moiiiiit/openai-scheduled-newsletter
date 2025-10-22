@@ -1,10 +1,10 @@
-# Deepseek Daily Newsletter
+# OpenAI Daily Newsletter
 
-This project generates a weekly technical digest of Electric Vehicle (EV) technology news using Deepseek's API.
+This project generates a weekly technical digest of Electric Vehicle (EV) technology news using OpenAI's API.
 
 ## Features
 - Fetches global EV news and trends
-- Uses Deepseek API and custom prompts
+- Uses OpenAI API and custom prompts
 - Sends results via email
 
 
@@ -15,9 +15,9 @@ To use your own API key locally without committing secrets to version control, c
 apiVersion: v1
 kind: Secret
 metadata:
-  name: deepseek-email-secrets
+  name: openai-email-secrets
 data:
-  DEEPSEEK_API_KEY: 
+  OPENAI_API_KEY: 
   SENDER_EMAIL_APP_PASSWORD: 
   SENDER_EMAIL: 
   EMAILS_JSON: 
@@ -27,7 +27,7 @@ data:
 
 ```
 
-Replace `<b64 encoded api key>` with your base64-encoded Deepseek API key. For example, to encode your key:
+Replace `<b64 encoded api key>` with your base64-encoded OpenAI API key. For example, to encode your key:
 
 ```bash
 echo -n "sk-your-api-key-here" | base64

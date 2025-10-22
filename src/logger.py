@@ -8,4 +8,4 @@ logging.basicConfig(
     stream=sys.stdout
 )
 
-logger = logging.getLogger("deepseek_daily_newsletter")
+logger = logging.getLogger("openai_daily_newsletter")

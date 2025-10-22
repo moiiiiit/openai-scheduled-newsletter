@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deepseek-newsletter
+  name: openai-newsletter
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deepseek-newsletter
+      app: openai-newsletter
   template:
     metadata:
       labels:
-        app: deepseek-newsletter
+        app: openai-newsletter
     spec:
       containers:
-      - name: deepseek-newsletter
-        image: localhost:32000/deepseek-newsletter:latest
+      - name: openai-newsletter
+        image: localhost:32000/openai-newsletter:latest
         envFrom:
         - secretRef:
-            name: deepseek-email-secrets
+            name: openai-email-secrets
         readinessProbe:
           exec:
             command:

@@ -24,13 +24,9 @@ def load_prompts():
 
 def call_openai_api(api_key, model, prompt):
     try:
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=model,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant"},
-                {"role": "user", "content": prompt},
-            ],
-            stream=False
+            input=prompt
         )
         return response.json()
     except Exception as e:

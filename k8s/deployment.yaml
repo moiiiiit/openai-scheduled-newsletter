@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepseek-newsletter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deepseek-newsletter
+  template:
+    metadata:
+      labels:
+        app: deepseek-newsletter
+    spec:
+      containers:
+      - name: deepseek-newsletter
+        image: localhost:32000/deepseek-newsletter:latest
+        envFrom:
+        - secretRef:
+            name: deepseek-email-secrets
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "print('ready')"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "print('alive')"

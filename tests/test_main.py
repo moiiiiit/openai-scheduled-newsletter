@@ -25,7 +25,7 @@ def test_job_runs(monkeypatch):
         sent.append((subject, body, sender_email, bcc_emails))
 
     class DummyResponse:
-        def json(self):
+        def output_text(self):
             return {"result": "mocked"}
     class DummyResponses:
         def create(self, *args, **kwargs):

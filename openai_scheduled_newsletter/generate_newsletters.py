@@ -22,12 +22,14 @@ def load_prompts():
 
 def call_openai_api(api_key, model, prompt):
     try:
-        client = OpenAI(api_key=api_key, base_url="https://api.openai.com")
+        client = OpenAI()
         response = client.responses.create(
             model=model,
+            tools=[{"type": "web_search"}],
+            reasoning={"effort": "medium"},
             input=prompt
         )
-        return response.json()
+        return response.output_text
     except Exception as e:
         logger.error(f"OpenAI API call failed: {e}")
         return {"error": str(e)}

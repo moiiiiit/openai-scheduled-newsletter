@@ -1,9 +1,8 @@
 # OpenAI Scheduled Newsletter
 
-This project generates a weekly technical digest of Electric Vehicle (EV) technology news using OpenAI's API.
+This project generates a scheduled technical digest of 'anything' using OpenAI's API.
 
 ## Features
-- Fetches global EV news and trends
 - Uses OpenAI API and custom prompts
 - Sends results via email
 
@@ -70,3 +69,4 @@ See the `Makefile` for more details and advanced usage.
 
 ## License
 MIT
+

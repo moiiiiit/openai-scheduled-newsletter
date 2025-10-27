@@ -1,55 +1,44 @@
-from .logger import logger
-
-import time
-import threading
-from croniter import croniter
-from datetime import datetime
-import os
+import uvicorn
 import json
-from .generate_newsletters import generate_newsletters
-from .send_email import send_email
+import os
+import threading
+from .cron_job import run_scheduler
+from .generate_newsletters import generate_newsletter_for_prompt, get_all_prompts
 
 # Cache sender_email and bcc_emails at module level
-_sender_email = os.environ.get('SENDER_EMAIL')
+_sender_email = os.environ.get("SENDER_EMAIL")
 if not _sender_email:
     raise ValueError("SENDER_EMAIL not found in environment variables")
-_emails_json = os.environ.get('EMAILS_JSON')
+_emails_json = os.environ.get("EMAILS_JSON")
 if not _emails_json:
     raise ValueError("EMAILS_JSON not found in environment variables")
 _recipients = json.loads(_emails_json)
-_bcc_emails = [r['email'] for r in _recipients]
+_bcc_emails = [r["email"] for r in _recipients]
 
-def job():
-    generate_newsletters(send_email, _sender_email, _bcc_emails)
-
-def get_next_cron_time(cron_expr, base_time=None):
-    if base_time is None:
-        base_time = datetime.now()
-    return croniter(cron_expr, base_time).get_next(datetime)
-
-def run_cron_scheduler():
-    cron_expr = os.environ.get("SCHEDULE_CRON", "0 8 * * 1")  # Default: Monday 8am
-    logger.info(f"Scheduler job scheduled with cron: {cron_expr}")
-    next_run = get_next_cron_time(cron_expr)
-    while True:
-        now = datetime.now()
-        if now >= next_run:
-            job()
-            logger.info(f"Job executed at {now}")
-            next_run = get_next_cron_time(cron_expr, now)
-        time.sleep(30)
-
-def run_scheduler():
-    run_cron_scheduler()
 
 def main():
+    print("[ENV] SENDER_EMAIL:", os.environ.get("SENDER_EMAIL"))
+    print("[ENV] EMAILS_JSON:", os.environ.get("EMAILS_JSON"))
+    print("[ENV] PROMPTS_JSON:", os.environ.get("PROMPTS_JSON"))
+    print("[ENV] OPENAI_API_KEY:", os.environ.get("OPENAI_API_KEY"))
+
+    def start_api():
+        uvicorn.run("openai_scheduled_newsletter.api:app", host="0.0.0.0", port=8000, reload=False)
+    api_thread = threading.Thread(target=start_api, daemon=True)
+    api_thread.start()
+
     run_scheduler()
+
+
+def generate_all_newsletters(sender_email, bcc_emails):
+    prompts = get_all_prompts()
+    for prompt in prompts:
+        generate_newsletter_for_prompt(prompt, sender_email, bcc_emails)
+
 
 if __name__ == "__main__":
     import sys
     if "--run-now" in sys.argv:
-        from .generate_newsletters import generate_newsletters
-        from .send_email import send_email
-        generate_newsletters(send_email, _sender_email, _bcc_emails)
+        generate_all_newsletters(_sender_email, _bcc_emails)
     else:
         main()

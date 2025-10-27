@@ -15,12 +15,12 @@ spec:
       containers:
       - name: openai-newsletter
         image: localhost:32000/openai-newsletter:latest
-        env:
-        - name: SCHEDULE_CRON
-          value: "0 8 * * 1"
         envFrom:
         - secretRef:
             name: openai-email-secrets
+        - secretRef:
+            name: openai-newsletter-secrets
+            optional: true
         readinessProbe:
           exec:
             command:

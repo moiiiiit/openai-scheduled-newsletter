@@ -1,0 +1,5 @@
+# Ruff configuration for openai-scheduled-newsletter
+line-length = 100
+select = ["E", "F", "I", "UP", "B", "C90", "N", "D", "ANN", "S", "A", "COM", "C4", "DTZ", "EM", "EXE", "FA", "ISC", "ICN", "INP", "PIE", "PT", "Q", "RET", "SIM", "T20", "TID", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "RUF"]
+ignore = ["S101", "D103", "ANN001", "D100", "PLR2004", "PLC0415", "ARG005", "ARG002", "ARG003", "ARG004"]
+exclude = [".venv", "venv", "build", "dist"]

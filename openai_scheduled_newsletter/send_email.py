@@ -1,15 +1,17 @@
-from .logger import logger
+import os
 import smtplib
 from email.message import EmailMessage
-import os
+
+from .logger import logger
+
 
 def send_email(subject, body, sender_email, bcc_emails):
     logger.info(f"Preparing email: subject={subject}, sender={sender_email}, bcc={bcc_emails}")
     msg = EmailMessage()
-    msg['Subject'] = subject
-    msg['From'] = sender_email
-    msg['To'] = sender_email
-    msg['Bcc'] = ', '.join(bcc_emails)
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = sender_email
+    msg["Bcc"] = ", ".join(bcc_emails)
     msg.set_content(body)
 
     smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")

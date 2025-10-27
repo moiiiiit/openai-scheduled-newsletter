@@ -15,6 +15,7 @@ croniter = "^6.0.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
 pytest-watch = "^4.2.0"
+ruff = "^0.14.2"
 
 [tool.poetry.group.dev]
 optional = true

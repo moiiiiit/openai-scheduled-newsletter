@@ -8,6 +8,7 @@ COPY scripts/run_newsletter.sh /app/run_newsletter
 RUN chmod +x /app/run_newsletter
 RUN poetry config virtualenvs.create false
 RUN poetry lock
+
 RUN poetry install --no-interaction --no-ansi --with dev
 RUN poetry run pytest --maxfail=1 --disable-warnings
 

@@ -14,6 +14,7 @@ def test_get_next_cron_time_basic():
     next_run = cron_job.get_next_cron_time(cron_expr, now)
     assert next_run == datetime(2025, 10, 27, 8, 0)
 
+
 def test_job_for_prompt_calls_generate(monkeypatch):
     called = {}
     prompt_obj = {"model": "model1", "prompt": "prompt1", "cron": "0 8 * * 1"}
@@ -27,6 +28,7 @@ def test_job_for_prompt_calls_generate(monkeypatch):
     assert called["prompt"] == prompt_obj
     assert called["sender"] == "sender@example.com"
     assert called["bcc"] == ["a@example.com"]
+
 
 def test_run_scheduler_starts_threads(monkeypatch):
     # Patch get_all_prompts to return two prompts

@@ -22,6 +22,7 @@ def get_sender_and_bcc():
     bcc_emails = [r["email"] for r in recipients]
     return sender_email, bcc_emails
 
+
 def get_next_cron_time(cron_expr, base_time=None):
     if base_time is None:
         base_time = datetime.now()

@@ -1,7 +1,10 @@
 cleanup-pods:
-	microk8s kubectl scale deployment openai-newsletter --replicas=0 2>&1
-	microk8s kubectl delete pods -l app=openai-newsletter --ignore-not-found 2>&1
-	microk8s kubectl delete deployment openai-newsletter --ignore-not-found 2>&1
+	-microk8s kubectl scale deployment openai-newsletter --replicas=0 2>&1
+	-microk8s kubectl delete pods -l app=openai-newsletter --ignore-not-found 2>&1
+	-microk8s kubectl delete deployment openai-newsletter --ignore-not-found 2>&1
+	-microk8s kubectl scale deployment openai-newsletter -n test --replicas=0 2>&1
+	-microk8s kubectl delete pods -l app=openai-newsletter -n test --ignore-not-found 2>&1
+	-microk8s kubectl delete deployment openai-newsletter -n test --ignore-not-found 2>&1
 
 build:
 	docker build --target prod -t openai-newsletter:latest . 2>&1
@@ -21,18 +24,32 @@ uninstall:
 	echo "MicroK8s and all registry/configuration data have been removed." 2>&1
 
 apply-manifests:
-	sudo microk8s kubectl apply -f k8s/deployment.yaml 2>&1
-	sudo microk8s kubectl apply -f k8s/service.yaml 2>&1
-	sudo microk8s kubectl apply -f k8s/secrets.yaml 2>&1
-	sudo microk8s kubectl rollout restart deployment openai-newsletter 2>&1
+	sudo microk8s kubectl apply -n default -f k8s/deployment.yaml 2>&1
+	sudo microk8s kubectl apply -n default -f k8s/service.yaml 2>&1
+	sudo microk8s kubectl apply -n default -f k8s/secrets.yaml 2>&1
+	sudo microk8s kubectl rollout restart -n default deployment openai-newsletter 2>&1
+
+test-manifests:
+	-sudo microk8s kubectl create namespace test 2>&1
+	sudo microk8s kubectl apply -n test -f k8s/deployment.yaml 2>&1
+	sudo microk8s kubectl apply -n test -f k8s/service.yaml 2>&1
+	sudo microk8s kubectl apply -n test -f k8s/secrets.yaml 2>&1
+	sudo microk8s kubectl apply -n test -f k8s/test-secrets.yaml 2>&1
+	sudo microk8s kubectl rollout restart -n test deployment openai-newsletter 2>&1
 
 test:
 	poetry run ptw
 
 run:
-	-make cleanup-pods
 	make build
 	make apply-manifests
+
+run-test-env:
+	make build
+	make test-manifests
+
+test:
+	poetry run ptw
 
 install:
 	if ! command -v docker >/dev/null 2>&1; then \

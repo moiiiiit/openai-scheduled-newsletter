@@ -17,6 +17,10 @@ _bcc_emails = [r["email"] for r in _recipients]
 
 
 def main():
+    print("[ENV] SENDER_EMAIL:", os.environ.get("SENDER_EMAIL"))
+    print("[ENV] EMAILS_JSON:", os.environ.get("EMAILS_JSON"))
+    print("[ENV] PROMPTS_JSON:", os.environ.get("PROMPTS_JSON"))
+    print("[ENV] OPENAI_API_KEY:", os.environ.get("OPENAI_API_KEY"))
     run_scheduler()
 
 

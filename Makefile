@@ -27,12 +27,14 @@ apply-manifests:
 	sudo microk8s kubectl apply -n default -f k8s/deployment.yaml 2>&1
 	sudo microk8s kubectl apply -n default -f k8s/service.yaml 2>&1
 	sudo microk8s kubectl apply -n default -f k8s/secrets.yaml 2>&1
+	sudo microk8s kubectl apply -n default -f k8s/ingress.yaml 2>&1
 	sudo microk8s kubectl rollout restart -n default deployment openai-newsletter 2>&1
 
 test-manifests:
 	-sudo microk8s kubectl create namespace test 2>&1
 	sudo microk8s kubectl apply -n test -f k8s/deployment.yaml 2>&1
 	sudo microk8s kubectl apply -n test -f k8s/service.yaml 2>&1
+	sudo microk8s kubectl apply -n test -f k8s/ingress.yaml 2>&1
 	sudo microk8s kubectl apply -n test -f k8s/secrets.yaml 2>&1
 	sudo microk8s kubectl apply -n test -f k8s/test-secrets.yaml 2>&1
 	sudo microk8s kubectl rollout restart -n test deployment openai-newsletter 2>&1

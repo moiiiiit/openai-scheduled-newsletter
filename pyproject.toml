@@ -11,6 +11,8 @@ requests = "*"
 python-dotenv = "*"
 openai = "^2.6.0"
 croniter = "^6.0.0"
+fastapi = "^0.110"
+uvicorn = {extras = ["standard"], version = "^0.29"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

@@ -1,7 +1,7 @@
-
+import uvicorn
 import json
 import os
-
+import threading
 from .cron_job import run_scheduler
 from .generate_newsletters import generate_newsletter_for_prompt, get_all_prompts
 
@@ -21,6 +21,12 @@ def main():
     print("[ENV] EMAILS_JSON:", os.environ.get("EMAILS_JSON"))
     print("[ENV] PROMPTS_JSON:", os.environ.get("PROMPTS_JSON"))
     print("[ENV] OPENAI_API_KEY:", os.environ.get("OPENAI_API_KEY"))
+
+    def start_api():
+        uvicorn.run("openai_scheduled_newsletter.api:app", host="0.0.0.0", port=8000, reload=False)
+    api_thread = threading.Thread(target=start_api, daemon=True)
+    api_thread.start()
+
     run_scheduler()
 
 

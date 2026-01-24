@@ -1,35 +1,76 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: openai-newsletter
+  name: openai-newsletter-api
+  labels:
+    app: openai-newsletter-api
+    component: api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: openai-newsletter
+      app: openai-newsletter-api
   template:
     metadata:
       labels:
-        app: openai-newsletter
+        app: openai-newsletter-api
+        component: api
     spec:
       containers:
-      - name: openai-newsletter
-        image: localhost:32000/openai-newsletter:latest
-        envFrom:
-        - secretRef:
-            name: openai-email-secrets
-        - secretRef:
-            name: openai-newsletter-secrets
-            optional: true
+      - name: api
+        image: openai-newsletter-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secrets
+              key: api-key
+        - name: SENDER_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: openai-secrets
+              key: sender-email
+        - name: SENDER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: openai-secrets
+              key: sender-password
+        - name: SMTP_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: openai-secrets
+              key: smtp-server
+        - name: PROMPTS_JSON
+          valueFrom:
+            configMapKeyRef:
+              name: newsletter-config
+              key: prompts.json
+        - name: BCC_EMAILS
+          valueFrom:
+            configMapKeyRef:
+              name: newsletter-config
+              key: bcc-emails
         readinessProbe:
-          exec:
-            command:
-            - python
-            - -c
-            - "print('ready')"
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
         livenessProbe:
-          exec:
-            command:
-            - python
-            - -c
-            - "print('alive')"
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

@@ -3,16 +3,21 @@ kind: Ingress
 metadata:
   name: openai-newsletter-api-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-    - host: openai-newsletter.local
+    - host: newsletter-api.example.com
       http:
         paths:
-          - path: /api(/|$)(.*)
+          - path: /
             pathType: Prefix
             backend:
               service:
                 name: openai-newsletter-api
                 port:
                   number: 8000
+  tls:
+  - hosts:
+    - newsletter-api.example.com
+    secretName: openai-newsletter-api-tls

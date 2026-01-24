@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: openai-newsletter-job
+  labels:
+    app: openai-newsletter-job
+    component: job
+spec:
+  # Run every day at 8:00 AM UTC
+  schedule: "0 8 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: openai-newsletter-job
+            component: job
+        spec:
+          serviceAccountName: newsletter-job
+          restartPolicy: OnFailure
+          containers:
+          - name: job
+            image: openai-newsletter-job:latest
+            imagePullPolicy: Always
+            env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secrets
+                  key: api-key
+            - name: SENDER_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secrets
+                  key: sender-email
+            - name: SENDER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secrets
+                  key: sender-password
+            - name: SMTP_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secrets
+                  key: smtp-server
+            - name: PROMPTS_JSON
+              valueFrom:
+                configMapKeyRef:
+                  name: newsletter-config
+                  key: prompts.json
+            - name: BCC_EMAILS
+              valueFrom:
+                configMapKeyRef:
+                  name: newsletter-config
+                  key: bcc-emails
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "500m"
+              limits:
+                memory: "1Gi"
+                cpu: "1000m"

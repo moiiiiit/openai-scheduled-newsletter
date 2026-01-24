@@ -31,8 +31,8 @@ jobs:
           path: openai_scheduled_newsletter_api/.venv
           key: poetry-api-${{ hashFiles('openai_scheduled_newsletter_api/poetry.lock') }}
 
-      - name: Install API dependencies
-        run: cd openai_scheduled_newsletter_api && poetry install
+      - name: Install API dependencies (with dev)
+        run: cd openai_scheduled_newsletter_api && poetry install --with dev
 
       - name: Run API tests
         run: cd openai_scheduled_newsletter_api && poetry run python -m pytest -v tests/
@@ -61,8 +61,8 @@ jobs:
           path: openai_scheduled_newsletter_job/.venv
           key: poetry-job-${{ hashFiles('openai_scheduled_newsletter_job/poetry.lock') }}
 
-      - name: Install Job dependencies
-        run: cd openai_scheduled_newsletter_job && poetry install
+      - name: Install Job dependencies (with dev)
+        run: cd openai_scheduled_newsletter_job && poetry install --with dev
 
       - name: Run Job tests
         run: cd openai_scheduled_newsletter_job && poetry run python -m pytest -v tests/

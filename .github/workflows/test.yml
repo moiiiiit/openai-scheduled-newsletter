@@ -7,12 +7,62 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  test-api:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Build test-only Docker image
-        run: docker build --target test-only -t newsletter-test .
-      - name: Run tests in Docker container
-        run: docker run --rm newsletter-test
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v3
+        with:
+          path: openai_scheduled_newsletter_api/.venv
+          key: poetry-api-${{ hashFiles('openai_scheduled_newsletter_api/poetry.lock') }}
+
+      - name: Install API dependencies
+        run: cd openai_scheduled_newsletter_api && poetry install
+
+      - name: Run API tests
+        run: cd openai_scheduled_newsletter_api && poetry run python -m pytest -v tests/
+
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v3
+        with:
+          path: openai_scheduled_newsletter_job/.venv
+          key: poetry-job-${{ hashFiles('openai_scheduled_newsletter_job/poetry.lock') }}
+
+      - name: Install Job dependencies
+        run: cd openai_scheduled_newsletter_job && poetry install
+
+      - name: Run Job tests
+        run: cd openai_scheduled_newsletter_job && poetry run python -m pytest -v tests/

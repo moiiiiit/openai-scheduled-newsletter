@@ -31,7 +31,7 @@ run-api:
 
 run-job:
 	@echo "Running newsletter job once"
-	cd openai_scheduled_newsletter_job && poetry run python -m openai_scheduled_newsletter.main
+	cd openai_scheduled_newsletter_job && poetry run python main.py
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

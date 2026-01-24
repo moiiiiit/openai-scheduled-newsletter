@@ -9,7 +9,7 @@ The application is split between **Azure Kubernetes Service (AKS)** for the API 
 1. **Cost Efficiency** – The scheduled job runs periodically (not continuously), so ACI charges only for execution time (~$2/month) rather than maintaining a full Kubernetes cluster 24/7.
 2. **Separation of Concerns** – The API and job are independent workloads with different patterns: the API needs constant availability and auto-scaling, while the job runs on a schedule and exits.
 3. **Scalability** – Each component scales independently. The API can handle traffic spikes without affecting job execution, and vice versa.
-4. **Learning & Growth** – This architecture supports future additions: adding a database, message queues, or additional services becomes cleaner with separated components.
+4. **Learning & Growth** – This architecture supports future additions: adding a database, message queues, or additional services becomes cleaner with separated components. Ideally, because databases and cache storage are stateful, for production ready applications, it would be benefitial to use cloud native services like Azure DB (or Azure Psql) or Azure Cache. The other way is to use kubernetes operators with AKS or stateful sets, but this is more complex and requires specialized talent and knowledge in the workings of the databases.
 5. **Production-Ready Pattern** – This mirrors real-world microservices architectures where specialized services are deployed on platforms optimized for their workload patterns. 
 
 

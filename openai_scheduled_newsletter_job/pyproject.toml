@@ -1,9 +1,9 @@
 [tool.poetry]
+package-mode = false
 name = "openai-scheduled-newsletter-job"
 version = "0.1.0"
 description = "Scheduled job service for OpenAI Newsletter generation"
 authors = ["Mohit Bhole <mohitb.steam@gmail.com>"]
-packages = [{include = "openai_scheduled_newsletter"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10"

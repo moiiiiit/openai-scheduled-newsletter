@@ -2,6 +2,8 @@
 
 This project generates a scheduled technical digest of 'anything' using OpenAI's API. Realistically, this project is more of a scaffold-style application for me to learn AWS/Azure services, and setting up all the platform and orchestration for a hybrid application. Hence the 'overengineering' with API, (eventually) database, AKS deployment for the API and ACI deployment for the scheduled job.
 
+Future plans include authenticating using Entra Id and implementing Azure PSQL DB for the prompt+email storage.
+
 ### Why a Hybrid Approach?
 
 The application is split between **Azure Kubernetes Service (AKS)** for the API and **Azure Container Instances (ACI)** for the scheduled job because:

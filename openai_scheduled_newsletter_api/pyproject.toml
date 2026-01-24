@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "openai-scheduled-newsletter-api"
+version = "0.1.0"
+description = "REST API service for OpenAI Newsletter generation"
+authors = ["Mohit Bhole <mohitb.steam@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+fastapi = "^0.110"
+uvicorn = {extras = ["standard"], version = "^0.29"}
+openai-scheduled-newsletter-shared = {path = "../shared", develop = true}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-watch = "^4.2.0"
+ruff = "^0.14.2"
+
+[tool.poetry.group.dev]
+optional = true
+
+[project]
+name = "openai-scheduled-newsletter-api"
+version = "0.1.0"
+description = "REST API service for OpenAI Newsletter generation"
+authors = [{name = "Mohit Bhole", email = "mohitb.steam@gmail.com"}]
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

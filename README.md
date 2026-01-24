@@ -1,6 +1,18 @@
 # OpenAI Scheduled Newsletter
 
-This project generates a scheduled technical digest of 'anything' using OpenAI's API.
+This project generates a scheduled technical digest of 'anything' using OpenAI's API. Realistically, this project is more of a scaffold-style application for me to learn AWS/Azure services, and setting up all the platform and orchestration for a hybrid application. Hence the 'overengineering' with API, (eventually) database, AKS deployment for the API and ACI deployment for the scheduled job.
+
+### Why a Hybrid Approach?
+
+The application is split between **Azure Kubernetes Service (AKS)** for the API and **Azure Container Instances (ACI)** for the scheduled job because:
+
+1. **Cost Efficiency** – The scheduled job runs periodically (not continuously), so ACI charges only for execution time (~$2/month) rather than maintaining a full Kubernetes cluster 24/7.
+2. **Separation of Concerns** – The API and job are independent workloads with different patterns: the API needs constant availability and auto-scaling, while the job runs on a schedule and exits.
+3. **Scalability** – Each component scales independently. The API can handle traffic spikes without affecting job execution, and vice versa.
+4. **Learning & Growth** – This architecture supports future additions: adding a database, message queues, or additional services becomes cleaner with separated components.
+5. **Production-Ready Pattern** – This mirrors real-world microservices architectures where specialized services are deployed on platforms optimized for their workload patterns. 
+
+
 
 ## Features
 - Uses OpenAI API and custom prompts
@@ -37,7 +49,7 @@ Then copy the output into the YAML file.
 1. Configure your API key, prompts, emails (and base64 encode the strings) in your Kubernetes secret or `.env` file.
 2. Use the Makefile for common development and deployment tasks:
 
-### Common Makefile Targets
+### Common Makefile Targets (Local Development)
 
 - `make install` – Install Docker, MicroK8s, and dependencies (run once per machine)
 - `make build` – Build and push the Docker image to the local MicroK8s registry

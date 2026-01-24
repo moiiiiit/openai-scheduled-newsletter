@@ -1,0 +1,1 @@
+"""OpenAI Scheduled Newsletter API."""

@@ -408,6 +408,24 @@ semver = ">=2.8.1"
 typing-extensions = {version = ">=4.11,<5", markers = "python_version < \"3.11\""}
 
 [[package]]
+name = "pulumi-azuread"
+version = "6.8.0"
+description = "A Pulumi package for creating and managing Azure Active Directory (Azure AD) cloud resources."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pulumi_azuread-6.8.0-py3-none-any.whl", hash = "sha256:c934fa87a8b9193d830de66460f758c29d6eb07ee70391f9dbd37a9c1ea59a75"},
+    {file = "pulumi_azuread-6.8.0.tar.gz", hash = "sha256:4c462e7a181761268bb9f161c4be6d591b0e005c9260b66ee80be0b57278da18"},
+]
+
+[package.dependencies]
+parver = ">=0.2.1"
+pulumi = ">=3.165.0,<4.0.0"
+semver = ">=2.8.1"
+typing-extensions = {version = ">=4.11,<5", markers = "python_version < \"3.11\""}
+
+[[package]]
 name = "pulumi-docker-build"
 version = "0.0.15"
 description = "A Pulumi provider for building modern Docker images with buildx and BuildKit."
@@ -594,4 +612,4 @@ zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "c1c850a64544f7f5b9777d2db851782a754c1e25ebbf035318ac1759bfba7750"
+content-hash = "c17b8b8f82aee1fc864efc6573c45bf18d74030151dd38ff1d726569da4ca558"

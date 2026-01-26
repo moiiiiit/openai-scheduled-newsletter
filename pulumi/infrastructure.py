@@ -1,7 +1,8 @@
 """Azure infrastructure resources"""
 
 import pulumi
-from pulumi_azure_native import resources, network, containerservice, authorization
+from pulumi_azure_native import resources, network, containerservice, authorization, managedidentity
+import pulumi_azuread as azuread
 from config import location, subscription_id
 from acr import create_acr
 
@@ -81,17 +82,48 @@ def get_kubelet_principal_id(profile):
     if not profile or "kubeletidentity" not in profile:
         return None
     kubelet = profile["kubeletidentity"]
-    return (
-        kubelet.get("object_id") or 
-        kubelet.get("objectId") or 
-        kubelet.get("principal_id") or 
-        kubelet.get("principalId") or
-        kubelet.get("client_id") or
-        kubelet.get("clientId")
+    pid = (
+        kubelet.get("object_id")
+        or kubelet.get("objectId")
+        or kubelet.get("principal_id")
+        or kubelet.get("principalId")
     )
+    if pid:
+        return pid
+
+    # Fallback: fetch principal from the managed identity resource if available
+    resource_id = kubelet.get("resource_id") or kubelet.get("resourceId")
+    if resource_id:
+        return managedidentity.get_user_assigned_identity_output(resource_id=resource_id).principal_id
+
+    # Fallback 2: resolve principal via AzureAD using clientId (appId)
+    client_id = kubelet.get("client_id") or kubelet.get("clientId")
+    if client_id:
+        return azuread.get_service_principal_output(client_id=client_id).object_id
+
+    return None
 
 
-kubelet_principal_id = cluster_details.identity_profile.apply(get_kubelet_principal_id)
+def require_principal_id(pid):
+    if pulumi.runtime.is_dry_run():
+        return pid
+    if not pid:
+        raise Exception("kubelet principal_id is None (AKS identity not ready yet)")
+    return pid
+
+
+def log_principal_id(pid):
+    if isinstance(pid, str):
+        pulumi.log.info(f"kubelet principal_id resolved: {pid}")
+    return pid
+
+
+kubelet_principal_id = (
+    cluster_details.identity_profile
+    .apply(get_kubelet_principal_id)
+    .apply(require_principal_id)
+    .apply(log_principal_id)
+)
 
 # ACR Pull role assignment
 acr_pull_role_definition_id = pulumi.Output.concat(

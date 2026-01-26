@@ -5,7 +5,7 @@ from pulumi_kubernetes import Provider
 from pulumi_kubernetes.core.v1 import Secret, ConfigMap, Namespace
 from pulumi_kubernetes.yaml import ConfigFile
 from pulumi_kubernetes.helm.v3 import Chart, ChartOpts, FetchOpts
-from infrastructure import kubeconfig, acr, acr_admin_username, acr_admin_password
+from infrastructure import kubeconfig, acr, acr_admin_username, acr_admin_password, aks
 from config import openai_api_key, sender_email, sender_password, smtp_server, prompts_json, bcc_emails
 from docker_build import build_and_push_images
 
@@ -15,7 +15,8 @@ api_image_resource, job_image_resource = build_and_push_images(acr, acr_admin_us
 # Kubernetes Provider
 k8s_provider = Provider(
     "openai-newsletter-k8s-provider",
-    kubeconfig=kubeconfig
+    kubeconfig=kubeconfig,
+    opts=pulumi.ResourceOptions(depends_on=[aks])
 )
 
 # Kubernetes Secret

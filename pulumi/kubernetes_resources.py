@@ -118,9 +118,15 @@ ingress_controller = Chart(
         ),
         values={
             "controller": {
+                # Ensure the Service is created and is a LoadBalancer
                 "service": {
-                    "type": "LoadBalancer"
-                }
+                    "enabled": True,
+                    "type": "LoadBalancer",
+                },
+                # Publish Service so ingress status is populated with LB IP/hostname
+                "publishService": {
+                    "enabled": True,
+                },
             }
         }
     ),

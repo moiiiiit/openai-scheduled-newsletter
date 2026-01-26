@@ -14,13 +14,13 @@ RUN chmod +x /app/run_newsletter
 # Install shared library first
 WORKDIR /app/shared
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction --no-ansi --with dev
+RUN poetry install --no-interaction --no-ansi
 
 # Install job service with shared as dependency
 WORKDIR /app/openai_scheduled_newsletter_job
 RUN poetry config virtualenvs.create false
 RUN poetry lock
-RUN poetry install --no-interaction --no-ansi --with dev
+RUN poetry install --no-interaction --no-ansi
 RUN poetry run pytest --maxfail=1 --disable-warnings
 
 FROM test-only AS prod

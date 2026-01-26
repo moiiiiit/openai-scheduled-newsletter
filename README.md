@@ -53,6 +53,81 @@ Apply your own values before deploying.
 - Poetry
 - Dependencies: PyYAML, requests
 
+## Build and Push Images (Azure Container Registry)
+
+Pulumi outputs your ACR details. You can retrieve them:
+
+```bash
+cd pulumi
+pulumi stack output acr_name
+pulumi stack output acr_login_server
+```
+
+### Login to ACR
+
+```bash
+# Login to Azure and set subscription
+az login
+az account set --subscription "<your-subscription-id-or-name>"
+
+# Login to ACR (preferred)
+az acr login --name <acr_name>
+
+# If login fails, use admin credentials (enabled by Pulumi)
+az acr credential show --name <acr_name> --query "{u:username,p:passwords[0].value}" -o tsv
+docker login <acr_login_server>
+# enter username/password from the previous command
+```
+
+### Build and push locally (explicit paths)
+
+Run these from the repository root so the Dockerfiles can `COPY shared/` correctly:
+
+```bash
+# API image
+docker build \
+  -f openai_scheduled_newsletter_api/Dockerfile \
+  -t <acr_login_server>/api:latest \
+  .
+
+docker push <acr_login_server>/api:latest
+
+# Job image
+docker build \
+  -f openai_scheduled_newsletter_job/Dockerfile \
+  -t <acr_login_server>/job:latest \
+  .
+
+docker push <acr_login_server>/job:latest
+```
+
+### Remote build with ACR (no local Docker required)
+
+```bash
+# API (remote build)
+az acr build \
+  --registry <acr_name> \
+  --file openai_scheduled_newsletter_api/Dockerfile \
+  --image api:latest \
+  .
+
+# Job (remote build)
+az acr build \
+  --registry <acr_name> \
+  --file openai_scheduled_newsletter_job/Dockerfile \
+  --image job:latest \
+  .
+```
+
+### Apply new images via Pulumi
+
+After images are available in ACR, update the stack so Kubernetes pulls them:
+
+```bash
+cd pulumi
+pulumi up --yes --skip-preview
+```
+
 ## License
 MIT
 

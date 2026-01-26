@@ -87,18 +87,18 @@ Run these from the repository root so the Dockerfiles can `COPY shared/` correct
 # API image
 docker build \
   -f openai_scheduled_newsletter_api/Dockerfile \
-  -t <acr_login_server>/api:latest \
+  -t openainewsletteracr4cd58318.azurecr.io/api:latest \
   .
 
-docker push <acr_login_server>/api:latest
+docker push openainewsletteracr4cd58318.azurecr.io/api:latest
 
 # Job image
 docker build \
   -f openai_scheduled_newsletter_job/Dockerfile \
-  -t <acr_login_server>/job:latest \
+  -t openainewsletteracr4cd58318.azurecr.io/job:latest \
   .
 
-docker push <acr_login_server>/job:latest
+docker push openainewsletteracr4cd58318.azurecr.io/job:latest
 ```
 
 ### Remote build with ACR (no local Docker required)

@@ -15,6 +15,7 @@ from pulumi_kubernetes.core.v1 import Namespace
 
 config = pulumi.Config("azure-native")
 location = config.require("location")
+subscription_id = config.require("subscription_id")
 
 resource_group = resources.ResourceGroup("resource_group", location=location)
 
@@ -106,32 +107,23 @@ cluster_details = containerservice.get_managed_cluster_output(
     resource_name=aks.name,
 )
 
+kubelet_principal_id = cluster_details.identity_profile.apply(
+    lambda profile: profile["kubeletidentity"].object_id if profile and "kubeletidentity" in profile else None
+)
 
-def kubelet_object_id(identity_profile):
-    if not identity_profile:
-        return None
+pulumi.export("kubelet_identity_profile", cluster_details.identity_profile)
+pulumi.export("kubelet_principal_id", kubelet_principal_id)
 
-    kubelet_identity = (
-        identity_profile.get("kubeletidentity")
-        or identity_profile.get("kubeletIdentity")
-    )
-    if not kubelet_identity:
-        return None
-
-    return (
-        getattr(kubelet_identity, "object_id", None)
-        or getattr(kubelet_identity, "principal_id", None)
-        or getattr(kubelet_identity, "client_id", None)
-    )
-
-
-kubelet_principal_id = cluster_details.identity_profile.apply(lambda p: kubelet_object_id(p))
-
+acr_pull_role_definition_id = pulumi.Output.concat(
+    "/subscriptions/", subscription_id,
+    "/providers/Microsoft.Authorization/roleDefinitions/",
+    "7f951dda-4ed3-4680-a7ca-43fe172d538d"  # AcrPull
+)
 acr_pull_role = authorization.RoleAssignment(
     "openai-newsletter-aks-acr-pull",
     principal_id=kubelet_principal_id,
     principal_type="ServicePrincipal",
-    role_definition_id="/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d",
+    role_definition_id=acr_pull_role_definition_id,
     scope=acr.id,
 )
 pulumi.export("acr_pull_role_id", acr_pull_role.id)

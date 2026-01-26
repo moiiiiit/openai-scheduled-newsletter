@@ -16,4 +16,3 @@ Thumbs.db
 .vscode/
 .idea/
 k8s/secrets.yaml
-pulumi/Pulumi.dev.yaml

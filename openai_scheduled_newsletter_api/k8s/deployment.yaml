@@ -24,6 +24,10 @@ spec:
         - containerPort: 8000
           name: http
           protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+          readOnly: true
         env:
         - name: OPENAI_API_KEY
           valueFrom:
@@ -45,11 +49,6 @@ spec:
             secretKeyRef:
               name: openai-secrets
               key: smtp-server
-        - name: PROMPTS_JSON
-          valueFrom:
-            configMapKeyRef:
-              name: newsletter-config
-              key: prompts.json
         - name: BCC_EMAILS
           valueFrom:
             configMapKeyRef:
@@ -74,3 +73,7 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+      volumes:
+      - name: config-volume
+        configMap:
+          name: newsletter-config

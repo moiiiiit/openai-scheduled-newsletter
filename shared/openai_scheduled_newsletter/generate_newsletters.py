@@ -17,10 +17,25 @@ def load_api_key():
 
 
 def load_prompts():
+    # Preferred: Read from mounted ConfigMap file (avoids JSON escaping issues with env vars)
+    prompts_file = "/etc/config/prompts.json"
+    if os.path.exists(prompts_file):
+        try:
+            with open(prompts_file, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Failed to read prompts from file {prompts_file}: {e}")
+    
+    # Fallback: Load from environment variable (for local development)
     prompts_json = os.environ.get("PROMPTS_JSON")
     if not prompts_json:
-        raise ValueError("PROMPTS_JSON not found in environment variables")
-    return json.loads(prompts_json)
+        raise ValueError("Neither /etc/config/prompts.json file nor PROMPTS_JSON env var found")
+    
+    try:
+        return json.loads(prompts_json)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse PROMPTS_JSON from env var: {e}")
+        raise ValueError(f"Invalid JSON in PROMPTS_JSON: {e}") from e
 
 
 def call_openai_api(api_key, model, prompt):

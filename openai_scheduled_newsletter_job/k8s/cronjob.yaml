@@ -23,6 +23,10 @@ spec:
           - name: job
             image: openai-newsletter-job:latest
             imagePullPolicy: Always
+            volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+              readOnly: true
             env:
             - name: OPENAI_API_KEY
               valueFrom:
@@ -44,11 +48,6 @@ spec:
                 secretKeyRef:
                   name: openai-secrets
                   key: smtp-server
-            - name: PROMPTS_JSON
-              valueFrom:
-                configMapKeyRef:
-                  name: newsletter-config
-                  key: prompts.json
             - name: BCC_EMAILS
               valueFrom:
                 configMapKeyRef:
@@ -61,3 +60,7 @@ spec:
               limits:
                 memory: "1Gi"
                 cpu: "1000m"
+          volumes:
+          - name: config-volume
+            configMap:
+              name: newsletter-config

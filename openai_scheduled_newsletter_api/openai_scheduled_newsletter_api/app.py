@@ -13,14 +13,11 @@ def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) ->
     security = HTTPBasic()
     API_PASSWORD = os.environ.get("API_PASSWORD", "changeme")
     SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "test@example.com")
-    EMAILS_JSON = os.environ.get("EMAILS_JSON", '[]')
     
-    import json
-    try:
-        recipients = json.loads(EMAILS_JSON)
-        bcc_emails = [r.get("email") for r in recipients if isinstance(r, dict)]
-    except (json.JSONDecodeError, TypeError):
-        bcc_emails = []
+    bcc_emails = []
+    bcc_emails_str = os.environ.get("BCC_EMAILS")
+    if bcc_emails_str:
+        bcc_emails = [e.strip() for e in bcc_emails_str.split(",") if e.strip()]
 
     if generate_func is None:
         generate_func = generate_newsletter_for_prompt

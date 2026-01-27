@@ -13,24 +13,13 @@ def main():
     """Execute all newsletters once. This runs as a scheduled job in Azure ACI."""
     logger.info("[JOB] Starting newsletter generation...")
 
-    # Validate required environment variables
     sender_email = os.environ.get("SENDER_EMAIL")
     if not sender_email:
         raise ValueError("SENDER_EMAIL not found in environment variables")
 
-    # Use BCC_EMAILS if available, fallback to EMAILS_JSON for backward compat
     bcc_emails_str = os.environ.get("BCC_EMAILS")
     if bcc_emails_str:
         bcc_emails = [e.strip() for e in bcc_emails_str.split(",")]
-    else:
-        # Fallback to EMAILS_JSON
-        emails_json = os.environ.get("EMAILS_JSON")
-        if emails_json:
-            recipients = json.loads(emails_json)
-            bcc_emails = [r["email"] for r in recipients]
-        else:
-            logger.warning("No BCC_EMAILS or EMAILS_JSON provided")
-            bcc_emails = []
 
     # Generate newsletters for all prompts
     try:

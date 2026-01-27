@@ -15,3 +15,7 @@ sender_password = app_config.require_secret("sender_password")
 smtp_server = app_config.get("smtp_server") or "smtp.gmail.com"
 prompts_json = app_config.get("prompts_json") or '[{"name":"demo","model":"gpt-4","prompt":"Test"}]'
 bcc_emails = app_config.get("bcc_emails") or "ops@example.com"
+
+# Auth0 configuration
+auth0_config = pulumi.Config("auth0")
+auth0_domain = auth0_config.require("domain")

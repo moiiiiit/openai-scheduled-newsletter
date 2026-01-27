@@ -54,6 +54,21 @@ spec:
             configMapKeyRef:
               name: newsletter-config
               key: bcc-emails
+        - name: AUTH0_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: openai-secrets
+              key: auth0-client-id
+        - name: AUTH0_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: openai-secrets
+              key: auth0-client-secret
+        - name: AUTH0_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: openai-secrets
+              key: auth0-domain
         readinessProbe:
           httpGet:
             path: /health

@@ -1,8 +1,5 @@
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from starlette.status import HTTP_401_UNAUTHORIZED
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 import os
-import secrets
 from typing import Callable, Optional, Any
 
 from openai_scheduled_newsletter.generate_newsletters import get_all_prompts, generate_newsletter_for_prompt
@@ -10,8 +7,6 @@ from openai_scheduled_newsletter.generate_newsletters import get_all_prompts, ge
 
 def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) -> FastAPI:
     app = FastAPI(title="OpenAI Newsletter API")
-    security = HTTPBasic()
-    API_PASSWORD = os.environ.get("API_PASSWORD", "changeme")
     SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "test@example.com")
     
     bcc_emails = []
@@ -22,23 +17,13 @@ def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) ->
     if generate_func is None:
         generate_func = generate_newsletter_for_prompt
 
-    def verify_password(credentials: HTTPBasicCredentials = Depends(security)):
-        correct = secrets.compare_digest(credentials.password, API_PASSWORD)
-        if not correct:
-            raise HTTPException(
-                status_code=HTTP_401_UNAUTHORIZED,
-                detail="Incorrect password",
-                headers={"WWW-Authenticate": "Basic"},
-            )
-        return credentials.username
-
     @app.get("/health")
     def health_check():
         """Health check endpoint."""
         return {"status": "healthy"}
 
     @app.get("/prompts")
-    def list_prompts(username: str = Depends(verify_password)):
+    def list_prompts():
         """Return all configured prompts."""
         return get_all_prompts()
 
@@ -46,7 +31,6 @@ def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) ->
     def execute_prompt(
         prompt_idx: int,
         background_tasks: BackgroundTasks,
-        username: str = Depends(verify_password),
     ):
         """Schedule prompt execution asynchronously and return immediately."""
         prompts = get_all_prompts()

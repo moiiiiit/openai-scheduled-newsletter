@@ -7,8 +7,9 @@ from pulumi_kubernetes.yaml import ConfigFile
 from pulumi_kubernetes.helm.v3 import Chart, ChartOpts, FetchOpts
 from pulumi_kubernetes.apiextensions import CustomResource
 from infrastructure import kubeconfig, acr, acr_admin_username, acr_admin_password, aks
-from config import openai_api_key, sender_email, sender_password, smtp_server, prompts_json, bcc_emails
+from config import openai_api_key, sender_email, sender_password, smtp_server, prompts_json, bcc_emails, auth0_domain
 from docker_build import build_and_push_images
+from auth0_setup import auth0_client_id
 
 # Build and push Docker images first
 api_image_resource, job_image_resource = build_and_push_images(acr, acr_admin_username, acr_admin_password)
@@ -20,7 +21,8 @@ k8s_provider = Provider(
     opts=pulumi.ResourceOptions(depends_on=[aks])
 )
 
-# Kubernetes Secret
+auth0_client_secret_config = pulumi.Config().get_secret("auth0_client_secret") or pulumi.Output.secret("")
+
 k8s_secret = Secret(
     "openai-newsletter-secrets",
     metadata={"name": "openai-secrets"},
@@ -29,6 +31,9 @@ k8s_secret = Secret(
         "sender-email": sender_email,
         "sender-password": sender_password,
         "smtp-server": smtp_server,
+        "auth0-client-id": auth0_client_id,
+        "auth0-client-secret": auth0_client_secret_config,
+        "auth0-domain": auth0_domain,
     },
     opts=pulumi.ResourceOptions(provider=k8s_provider)
 )

@@ -390,6 +390,24 @@ pyyaml = ">=6.0,<7.0"
 semver = ">=3.0,<4.0"
 
 [[package]]
+name = "pulumi-auth0"
+version = "3.36.0"
+description = "A Pulumi package for creating and managing auth0 cloud resources."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pulumi_auth0-3.36.0-py3-none-any.whl", hash = "sha256:17cca74a5a3117e4582ee693f99d95b9742dcf6d3dbf596eaf8bbc79e4599a95"},
+    {file = "pulumi_auth0-3.36.0.tar.gz", hash = "sha256:94e079270c17053ee93964389007e1154b9cf6085da8e407005d463d9bd3f314"},
+]
+
+[package.dependencies]
+parver = ">=0.2.1"
+pulumi = ">=3.165.0,<4.0.0"
+semver = ">=2.8.1"
+typing-extensions = {version = ">=4.11,<5", markers = "python_version < \"3.11\""}
+
+[[package]]
 name = "pulumi-azure-native"
 version = "3.12.1"
 description = "A native Pulumi package for creating and managing Azure resources."
@@ -612,4 +630,4 @@ zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "c17b8b8f82aee1fc864efc6573c45bf18d74030151dd38ff1d726569da4ca558"
+content-hash = "c2a4417571ac71015e19dc8f79e654e4aafc3c1a1583ce56cb02793a51b56809"

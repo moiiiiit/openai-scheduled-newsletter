@@ -3,22 +3,32 @@ kind: Ingress
 metadata:
   name: openai-newsletter-api-ingress
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local:4180/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://newsletter-api.mohitbhole.net/oauth2/start?rd=$request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-Request-Email,X-Auth-Request-User"
 spec:
   ingressClassName: nginx
-  rules:
-    - host: newsletter-api.mohitbhole.net
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: openai-newsletter-api
-                port:
-                  number: 8000
   tls:
   - hosts:
     - newsletter-api.mohitbhole.net
     secretName: openai-newsletter-api-tls
+  rules:
+  - host: newsletter-api.mohitbhole.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: openai-newsletter-api
+            port:
+              number: 8000
+      - path: /oauth2
+        pathType: Prefix
+        backend:
+          service:
+            name: oauth2-proxy
+            namespace: oauth2-proxy
+            port:
+              number: 4180

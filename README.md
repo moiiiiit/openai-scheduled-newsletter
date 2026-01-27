@@ -1,8 +1,8 @@
 # OpenAI Scheduled Newsletter
 
-This project generates a scheduled technical digest of 'anything' using OpenAI's API. Realistically, this project is more of a scaffold-style application for me to learn AWS/Azure services, and setting up all the platform and orchestration for a hybrid application. Hence the 'overengineering' with API, (eventually) database, AKS deployment for the API and ACI deployment for the scheduled job.
+This project generates a scheduled technical digest of 'anything' using OpenAI's API. Realistically, this project is more of a scaffold-style application for me to learn AWS/Azure services, and setting up all the platform and orchestration for a hybrid application. Hence the 'overengineering' with API, Auth0, database, AKS deployment for the API and ACI deployment for the scheduled job.
 
-Future plans include authenticating using Entra Id and implementing Azure PSQL DB for the prompt+email storage.
+Started as a simple script to send a newsletter to my wife, evolved into a process for me to 0->1 a cloud-native web application.
 
 ### Why a Hybrid Approach?
 
@@ -43,90 +43,114 @@ export BCC_EMAILS='ops@example.com'
 - Run tests: `make test` (or `./run_tests.sh`)
 
 ### Kubernetes secrets/config
-- Secret (used by both API and Job): `openai-secrets` with keys `api-key`, `sender-email`, `sender-password`, `smtp-server` (see `openai_scheduled_newsletter_api/k8s/secret.yaml`).
-- ConfigMap: `newsletter-config` with `prompts.json` and `bcc-emails` (see `openai_scheduled_newsletter_api/k8s/configmap.yaml`).
-
-Apply your own values before deploying.
+- Secret (used by both API and Job): `openai-secrets` with keys `api-key`, `sender-email`, `sender-password`, `smtp-server`, `auth0-client-id`, `auth0-client-secret`, `auth0-domain`.
+- ConfigMap: `newsletter-config` with `prompts.json` and `bcc-emails`.
+- **Prompts are loaded from mounted file** (`/etc/config/prompts.json`), not environment variables, to avoid JSON escaping issues.
+- **API is now public** (authentication handled by oauth2-proxy at ingress level, not Basic Auth).
 
 ## Requirements
 - Python 3.10+
 - Poetry
 - Dependencies: PyYAML, requests
 
-## Build and Push Images (Azure Container Registry)
+## Build and Deploy with Pulumi
 
-Pulumi outputs your ACR details. You can retrieve them:
+Pulumi orchestrates the entire deployment: Azure infrastructure, Docker image builds, and Kubernetes resources.
 
-```bash
-cd pulumi
-pulumi stack output acr_name
-pulumi stack output acr_login_server
-```
+### Prerequisites
 
-### Login to ACR
+1. **Azure CLI** logged in and subscription set
+2. **Pulumi** installed
+3. **Auth0 account** (free tier) with a Pulumi M2M (Machine-to-Machine) app created
+4. **Docker daemon** running (for image builds via `pulumi-docker-build`)
 
-```bash
-# Login to Azure and set subscription
-az login
-az account set --subscription "<your-subscription-id-or-name>"
+### Pulumi Configuration
 
-# Login to ACR (preferred)
-az acr login --name <acr_name>
-
-# If login fails, use admin credentials (enabled by Pulumi)
-az acr credential show --name <acr_name> --query "{u:username,p:passwords[0].value}" -o tsv
-docker login <acr_login_server>
-# enter username/password from the previous command
-```
-
-### Build and push locally (explicit paths)
-
-Run these from the repository root so the Dockerfiles can `COPY shared/` correctly:
-
-```bash
-# API image
-docker build \
-  -f openai_scheduled_newsletter_api/Dockerfile \
-  -t openainewsletteracr4cd58318.azurecr.io/api:latest \
-  .
-
-docker push openainewsletteracr4cd58318.azurecr.io/api:latest
-
-# Job image
-docker build \
-  -f openai_scheduled_newsletter_job/Dockerfile \
-  -t openainewsletteracr4cd58318.azurecr.io/job:latest \
-  .
-
-docker push openainewsletteracr4cd58318.azurecr.io/job:latest
-```
-
-### Remote build with ACR (no local Docker required)
-
-```bash
-# API (remote build)
-az acr build \
-  --registry <acr_name> \
-  --file openai_scheduled_newsletter_api/Dockerfile \
-  --image api:latest \
-  .
-
-# Job (remote build)
-az acr build \
-  --registry <acr_name> \
-  --file openai_scheduled_newsletter_job/Dockerfile \
-  --image job:latest \
-  .
-```
-
-### Apply new images via Pulumi
-
-After images are available in ACR, update the stack so Kubernetes pulls them:
+Set the required Pulumi secrets and config values:
 
 ```bash
 cd pulumi
-pulumi up --yes --skip-preview
+
+# Azure configuration
+pulumi config set azure-native:location westus2
+pulumi config set azure-native:subscription_id <your-subscription-id>
+
+# Application configuration
+pulumi config set openai_api_key <your-openai-api-key> --secret
+pulumi config set sender_email your-email@gmail.com
+pulumi config set sender_password <app-password-or-smtp-password> --secret
+pulumi config set smtp_server smtp.gmail.com  # optional; defaults to gmail
+pulumi config set prompts_json '[{"name":"EV Tech Weekly","model":"gpt-5","prompt":"..."}]'  # JSON array
+pulumi config set bcc_emails "user1@example.com,user2@example.com"
+
+# Auth0 configuration
+# First, create a Pulumi M2M app in Auth0 and get its credentials
+pulumi config set auth0:domain your-tenant.us.auth0.com
+pulumi config set auth0:clientId <m2m-client-id> --secret
+pulumi config set auth0:clientSecret <m2m-client-secret> --secret
+
+# Auth0 client secret (from the OpenAI Newsletter app created by Pulumi)
+# Retrieve from Auth0 dashboard after pulumi up creates the client
+pulumi config set auth0_client_secret <client-secret-from-auth0-dashboard> --secret
 ```
+
+### Deploy
+
+```bash
+cd pulumi
+pulumi up --yes
+```
+
+This will:
+- Create Azure infrastructure (VNet, AKS, ACR, etc.)
+- Build Docker images for API and Job via `pulumi-docker-build`
+- Push images to ACR
+- Deploy to Kubernetes (API Deployment, CronJob, ConfigMaps, Secrets)
+- Create Auth0 application for authentication
+
+### Images Built Automatically
+
+Pulumi uses `pulumi-docker-build` to build and push images. No manual `docker build` or `docker push` needed. The Dockerfiles are in:
+- `openai_scheduled_newsletter_api/Dockerfile`
+- `openai_scheduled_newsletter_job/Dockerfile`
+
+The Dockerfiles copy the `shared/` directory during build, so run `pulumi up` from the repository root.
+
+## API Endpoints
+
+All endpoints are now public (authentication via oauth2-proxy at ingress):
+
+- `GET /health` – Health check (no auth required)
+- `GET /prompts` – List all prompts
+- `POST /execute/{prompt_idx}` – Execute prompt by index (runs async in background)
+
+Swagger docs available at `GET /docs` (once oauth2-proxy is deployed).
+
+## Scheduled Job (CronJob)
+
+The job runs via Kubernetes CronJob on a schedule (default: 8 AM UTC = 2 AM CST). Update `openai_scheduled_newsletter_job/k8s/cronjob.yaml`:
+
+```yaml
+spec:
+  schedule: "0 14 * * *"  # Change to run at a different time (e.g., 2 PM UTC for 8 AM CST)
+  timeZone: "America/Chicago"  # Kubernetes 1.27+ supports timeZone
+```
+
+Redeploy: `pulumi up --yes`
+
+## Authentication (oauth2-proxy + Auth0)
+
+**In Progress:** oauth2-proxy deployment (sits in front of API, redirects unauthenticated requests to Auth0).
+
+For now, the API is public. Will be gated by Auth0 authentication once oauth2-proxy is deployed.
+
+## Architecture
+
+- **API**: FastAPI on AKS (Kubernetes Deployment, HTTPS via Let's Encrypt + NGINX Ingress)
+- **Scheduled Job**: Python CLI on AKS (Kubernetes CronJob, runs on schedule)
+- **Data**: Azure Container Registry (Docker images), Kubernetes ConfigMaps/Secrets
+- **Auth**: Auth0 (OIDC provider) + oauth2-proxy (in progress)
+- **IaC**: Pulumi (Python, manages Azure + Kubernetes resources)
 
 ## License
 MIT

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.status import HTTP_401_UNAUTHORIZED
 import os
@@ -43,15 +43,19 @@ def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) ->
         return get_all_prompts()
 
     @app.post("/execute/{prompt_idx}")
-    def execute_prompt(prompt_idx: int, username: str = Depends(verify_password)):
-        """Execute a prompt by its index in the prompt list."""
+    def execute_prompt(
+        prompt_idx: int,
+        background_tasks: BackgroundTasks,
+        username: str = Depends(verify_password),
+    ):
+        """Schedule prompt execution asynchronously and return immediately."""
         prompts = get_all_prompts()
         if not (0 <= prompt_idx < len(prompts)):
             raise HTTPException(status_code=404, detail="Prompt not found")
         prompt = prompts[prompt_idx]
         sender = SENDER_EMAIL or "test@example.com"
         bcc = bcc_emails or ["test@example.com"]
-        generate_func(prompt, sender, bcc)
+        background_tasks.add_task(generate_func, prompt, sender, bcc)
         return {"status": "executed", "prompt": prompt}
 
     return app

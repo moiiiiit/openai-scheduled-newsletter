@@ -112,17 +112,10 @@ def require_principal_id(pid):
     return pid
 
 
-def log_principal_id(pid):
-    if isinstance(pid, str):
-        pulumi.log.info(f"kubelet principal_id resolved: {pid}")
-    return pid
-
-
 kubelet_principal_id = (
     cluster_details.identity_profile
     .apply(get_kubelet_principal_id)
     .apply(require_principal_id)
-    .apply(log_principal_id)
 )
 
 # ACR Pull role assignment

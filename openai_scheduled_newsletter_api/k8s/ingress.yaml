@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: newsletter-api.example.com
+    - host: newsletter-api.mohitbhole.net
       http:
         paths:
           - path: /
@@ -20,5 +20,5 @@ spec:
                   number: 8000
   tls:
   - hosts:
-    - newsletter-api.example.com
+    - newsletter-api.mohitbhole.net
     secretName: openai-newsletter-api-tls

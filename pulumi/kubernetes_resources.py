@@ -5,6 +5,7 @@ from pulumi_kubernetes import Provider
 from pulumi_kubernetes.core.v1 import Secret, ConfigMap, Namespace
 from pulumi_kubernetes.yaml import ConfigFile
 from pulumi_kubernetes.helm.v3 import Chart, ChartOpts, FetchOpts
+from pulumi_kubernetes.apiextensions import CustomResource
 from infrastructure import kubeconfig, acr, acr_admin_username, acr_admin_password, aks
 from config import openai_api_key, sender_email, sender_password, smtp_server, prompts_json, bcc_emails
 from docker_build import build_and_push_images
@@ -66,40 +67,6 @@ def set_images(obj, opts):
     return obj
 
 
-# Deploy API manifests (depends on image being pushed)
-api_deployment = ConfigFile(
-    "api-deployment",
-    file="../openai_scheduled_newsletter_api/k8s/deployment.yaml",
-    transformations=[set_images],
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[k8s_secret, k8s_configmap, api_image_resource])
-)
-
-api_service = ConfigFile(
-    "api-service",
-    file="../openai_scheduled_newsletter_api/k8s/service.yaml",
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[api_deployment])
-)
-
-api_ingress = ConfigFile(
-    "api-ingress",
-    file="../openai_scheduled_newsletter_api/k8s/ingress.yaml",
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[api_service])
-)
-
-# Deploy Job manifests (depends on image being pushed)
-job_cron = ConfigFile(
-    "job-cron",
-    file="../openai_scheduled_newsletter_job/k8s/cronjob.yaml",
-    transformations=[set_images],
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[k8s_secret, k8s_configmap, job_image_resource])
-)
-
-job_sa = ConfigFile(
-    "job-serviceaccount",
-    file="../openai_scheduled_newsletter_job/k8s/serviceaccount.yaml",
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[job_cron])
-)
-
 # Install NGINX Ingress Controller
 ingress_ns = Namespace(
     "ingress-nginx-namespace",
@@ -122,13 +89,91 @@ ingress_controller = Chart(
                 "service": {
                     "enabled": True,
                     "type": "LoadBalancer",
+                    # Azure LoadBalancer health probe configuration
+                    "annotations": {
+                        "service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path": "/health",
+                    },
                 },
                 # Publish Service so ingress status is populated with LB IP/hostname
                 "publishService": {
                     "enabled": True,
                 },
+                # Add custom server config for /health endpoint
+                "config": {
+                    "server-snippet": """
+                        location /health {
+                            access_log off;
+                            proxy_pass http://openai-newsletter-api.default.svc.cluster.local:8000/health;
+                            proxy_set_header Host $host;
+                        }
+                    """
+                },
             }
         }
     ),
     opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[ingress_ns])
+)
+
+# Install cert-manager for automatic TLS certificates
+cert_manager_ns = Namespace(
+    "cert-manager-namespace",
+    metadata={"name": "cert-manager"},
+    opts=pulumi.ResourceOptions(provider=k8s_provider)
+)
+
+cert_manager = Chart(
+    "cert-manager",
+    ChartOpts(
+        chart="cert-manager",
+        version="v1.14.4",
+        namespace="cert-manager",
+        fetch_opts=FetchOpts(
+            repo="https://charts.jetstack.io",
+        ),
+        values={
+            "installCRDs": True,
+        }
+    ),
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[cert_manager_ns])
+)
+
+# Create ClusterIssuer for Let's Encrypt (as YAML for better handling)
+lets_encrypt_issuer_yaml = ConfigFile(
+    "letsencrypt-issuer",
+    file="letsencrypt-issuer.yaml",
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[cert_manager])
+)
+
+
+api_deployment = ConfigFile(
+    "api-deployment",
+    file="../openai_scheduled_newsletter_api/k8s/deployment.yaml",
+    transformations=[set_images],
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[k8s_secret, k8s_configmap, api_image_resource])
+)
+
+api_service = ConfigFile(
+    "api-service",
+    file="../openai_scheduled_newsletter_api/k8s/service.yaml",
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[api_deployment])
+)
+
+api_ingress = ConfigFile(
+    "api-ingress",
+    file="../openai_scheduled_newsletter_api/k8s/ingress.yaml",
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[api_service, lets_encrypt_issuer_yaml])
+)
+
+# Deploy Job manifests (depends on image being pushed)
+job_cron = ConfigFile(
+    "job-cron",
+    file="../openai_scheduled_newsletter_job/k8s/cronjob.yaml",
+    transformations=[set_images],
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[k8s_secret, k8s_configmap, job_image_resource])
+)
+
+job_sa = ConfigFile(
+    "job-serviceaccount",
+    file="../openai_scheduled_newsletter_job/k8s/serviceaccount.yaml",
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[job_cron])
 )

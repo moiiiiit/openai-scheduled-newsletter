@@ -25,14 +25,15 @@ if cookie_secret is None:
 extra_args = pulumi.Output.all(auth0_domain, cookie_secret).apply(lambda a: [
     "--provider=oidc",
     f"--oidc-issuer-url=https://{a[0]}/",
+    f"--oidc-jwks-url=https://{a[0]}/.well-known/jwks.json",
     "--redirect-url=https://newsletter-api.mohitbhole.net/oauth2/callback",
     "--email-domain=*",
+    "--scope=openid email profile",
     f"--cookie-secret={a[1]}",
     "--cookie-secure=true",
     "--cookie-httponly=true",
     "--cookie-samesite=lax",
-    "--skip-auth-preflight=true",
-    "--skip-auth-regex=^/health$",
+    "--skip-auth-regex=^/health$|^/docs|^/redoc|^/openapi.json",
 ])
 
 values = {

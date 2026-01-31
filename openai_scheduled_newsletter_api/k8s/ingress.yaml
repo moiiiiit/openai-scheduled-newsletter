@@ -1,11 +1,44 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: openai-newsletter-api-ingress
+  name: openai-newsletter-api-public
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local:4180/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://newsletter-api.mohitbhole.net/oauth2/start?rd=$request_uri"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - newsletter-api.mohitbhole.net
+    secretName: openai-newsletter-api-tls
+  rules:
+  - host: newsletter-api.mohitbhole.net
+    http:
+      paths:
+      # Public health check - no auth required
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: openai-newsletter-api
+            port:
+              number: 8000
+      # OAuth2 proxy callback
+      - path: /oauth2
+        pathType: Prefix
+        backend:
+          service:
+            name: oauth2-proxy-external
+            port:
+              number: 4180
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: openai-newsletter-api-protected
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy-external.default.svc.cluster.local:4180/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://newsletter-api.mohitbhole.net/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-Request-Email,X-Auth-Request-User"
 spec:
   ingressClassName: nginx
@@ -17,6 +50,7 @@ spec:
   - host: newsletter-api.mohitbhole.net
     http:
       paths:
+      # All other paths require auth
       - path: /
         pathType: Prefix
         backend:
@@ -24,11 +58,3 @@ spec:
             name: openai-newsletter-api
             port:
               number: 8000
-      - path: /oauth2
-        pathType: Prefix
-        backend:
-          service:
-            name: oauth2-proxy
-            namespace: oauth2-proxy
-            port:
-              number: 4180

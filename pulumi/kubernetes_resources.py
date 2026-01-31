@@ -163,10 +163,16 @@ api_service = ConfigFile(
     opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[api_deployment])
 )
 
+oauth2_proxy_ref = ConfigFile(
+    "oauth2-proxy-service-ref",
+    file="../openai_scheduled_newsletter_api/k8s/oauth2-proxy-service-ref.yaml",
+    opts=pulumi.ResourceOptions(provider=k8s_provider)
+)
+
 api_ingress = ConfigFile(
     "api-ingress",
     file="../openai_scheduled_newsletter_api/k8s/ingress.yaml",
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[api_service, lets_encrypt_issuer_yaml])
+    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[api_service, oauth2_proxy_ref, lets_encrypt_issuer_yaml])
 )
 
 # Deploy Job manifests (depends on image being pushed)

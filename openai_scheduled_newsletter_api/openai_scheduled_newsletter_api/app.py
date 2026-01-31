@@ -1,8 +1,18 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 import os
 from typing import Callable, Optional, Any
 
 from openai_scheduled_newsletter.generate_newsletters import get_all_prompts, generate_newsletter_for_prompt
+
+
+def get_authenticated_user(request: Request) -> dict:
+    """Extract authenticated user info from oauth2-proxy headers."""
+    user = {
+        "email": request.headers.get("X-Auth-Request-Email", "unknown"),
+        "user": request.headers.get("X-Auth-Request-User", "unknown"),
+        "groups": request.headers.get("X-Auth-Request-Groups", "").split(",") if request.headers.get("X-Auth-Request-Groups") else [],
+    }
+    return user
 
 
 def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) -> FastAPI:
@@ -22,6 +32,12 @@ def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) ->
         """Health check endpoint."""
         return {"status": "healthy"}
 
+    @app.get("/user")
+    def get_user(request: Request):
+        """Return authenticated user info from oauth2-proxy."""
+        user = get_authenticated_user(request)
+        return user
+
     @app.get("/prompts")
     def list_prompts():
         """Return all configured prompts."""
@@ -31,8 +47,14 @@ def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) ->
     def execute_prompt(
         prompt_idx: int,
         background_tasks: BackgroundTasks,
+        request: Request,
     ):
         """Schedule prompt execution asynchronously and return immediately."""
+        # Require authentication via oauth2-proxy
+        user = get_authenticated_user(request)
+        if user["email"] == "unknown":
+            raise HTTPException(status_code=401, detail="User not authenticated")
+        
         prompts = get_all_prompts()
         if not (0 <= prompt_idx < len(prompts)):
             raise HTTPException(status_code=404, detail="Prompt not found")
@@ -40,7 +62,7 @@ def get_app(generate_func: Optional[Callable[[Any, str, list], None]] = None) ->
         sender = SENDER_EMAIL or "test@example.com"
         bcc = bcc_emails or ["test@example.com"]
         background_tasks.add_task(generate_func, prompt, sender, bcc)
-        return {"status": "executed", "prompt": prompt}
+        return {"status": "executed", "prompt": prompt, "user": user["email"]}
 
     return app
 

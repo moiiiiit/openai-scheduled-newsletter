@@ -10,7 +10,11 @@ app = auth0.Client(
     allowed_logout_urls=["https://newsletter-api.mohitbhole.net"],
     allowed_origins=["https://newsletter-api.mohitbhole.net"],
     app_type="regular_web",
-    callbacks=["https://newsletter-api.mohitbhole.net/auth/callback"],
+    callbacks=["https://newsletter-api.mohitbhole.net/oauth2/callback"],
+    oidc_conformant=True,
+    jwt_configuration=auth0.ClientJwtConfigurationArgs(
+        alg="RS256",
+    ),
 )
 
 auth0_client_id = app.client_id

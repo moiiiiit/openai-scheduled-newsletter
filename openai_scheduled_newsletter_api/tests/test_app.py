@@ -26,7 +26,9 @@ def test_prompts_success():
 
 
 def test_execute_prompt_not_found():
-    response = client.post("/execute/999")
+    # Mock OAuth2 proxy headers
+    headers = {"X-Auth-Request-Email": "test@example.com"}
+    response = client.post("/execute/999", headers=headers)
     assert response.status_code == 404
 
 
@@ -36,7 +38,9 @@ def test_execute_prompt_success():
     def fake_generate_newsletter_for_prompt(prompt, sender, bcc):
         called["executed"] = True
     test_client = TestClient(get_app(generate_func=fake_generate_newsletter_for_prompt))
-    response = test_client.post("/execute/0")
+    # Mock OAuth2 proxy headers
+    headers = {"X-Auth-Request-Email": "test@example.com"}
+    response = test_client.post("/execute/0", headers=headers)
     assert response.status_code == 200
     assert response.json()["status"] == "executed"
     # Note: background task might not execute in test client

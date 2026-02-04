@@ -1,5 +1,6 @@
 # OpenAI Scheduled Newsletter
 
+Most likely deployed here: https://newsletter-api.mohitbhole.net/docs (Reach out if interested in seeing demo and app is offline)
 This project generates a scheduled technical digest of 'anything' using OpenAI's API. Realistically, this project is more of a scaffold-style application for me to learn AWS/Azure services, and setting up all the platform and orchestration for a hybrid application. Hence the 'overengineering' with API, Auth0, database, AKS deployment for the API and ACI deployment for the scheduled job.
 
 Started as a simple script to send a newsletter to my wife, evolved into a process for me to 0->1 a cloud-native web application.

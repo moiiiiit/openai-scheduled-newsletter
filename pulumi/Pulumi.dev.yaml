@@ -1,5 +1,5 @@
 config:
-  azure-native:location: WestUS2
+  azure-native:location: CentralUS
   openai-newsletter:sender_email: mohitb.steam@gmail.com
   openai-newsletter:openai_api_key:
     secure: AAABAElKdmT0wkk34CgWhTBOhButL+KCr6c0oC/n8EtMQwzjBA5JU2IAO6YLyNTLlJBbO7z9kOQiOZg6T8ULjybcrUjuUCnrBX21FLFrkFJB1sw6rsjXbyp558Yy2wI8FCBqRW3iexJQDq1eJ/ZvV/93FRkk2oTNfBExPHxEadJAXdEDG6UQAiaOdMtBElkbeEZ0lXevsqd2QYXKAF65xx0SecobrUBp3HGRbnwYqyWlvsvuohsvmzc9B3srQiSx9Y67UQ==
@@ -17,3 +17,5 @@ config:
     secure: AAABAOr2AkqYJO+smZ2407U2/O8Bj0p1CBs72NVn2bRAbMC7DeNGHUwnxa+bmXAdAD2ZlGvMhqNTPKSeCSQ/WQZFE6i7muZmrnu1yBjlXopLMtn+qTISwfUmmRTjwPd5
   openai-newsletter:oauth2_cookie_secret:
     secure: AAABABEqXdu4zNHfqSsnbtFn4GD/OW9F0+6tZDya3gK1zbX8wuRWuIyfcJ6fHFcRSciUBJ9zgYnptF2EAaTODQ==
+  openai-newsletter:mysql_admin_password:
+    secure: AAABAB53PZK0q42OTgeXr6oRRldniwyXZAs3qazvwmeIfOac+eP2PTOo6cU=

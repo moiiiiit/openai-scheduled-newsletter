@@ -41,7 +41,7 @@ aks = containerservice.ManagedCluster(
         containerservice.ManagedClusterAgentPoolProfileArgs(
             name="agentpool",
             count=2,
-            vm_size="Standard_B2s_v2",
+            vm_size="standard_d2s_v3",
             mode="System",
             vnet_subnet_id=aks_subnet.id,
         )

@@ -10,6 +10,7 @@ from infrastructure import kubeconfig, acr, acr_admin_username, acr_admin_passwo
 from config import openai_api_key, sender_email, sender_password, smtp_server, prompts_json, bcc_emails, auth0_domain
 from docker_build import build_and_push_images
 from auth0_setup import auth0_client_id
+from cert_manager import setup_cert_manager
 
 # Build and push Docker images first
 api_image_resource, job_image_resource = build_and_push_images(acr, acr_admin_username, acr_admin_password)
@@ -119,35 +120,7 @@ ingress_controller = Chart(
     opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[ingress_ns])
 )
 
-# Install cert-manager for automatic TLS certificates
-cert_manager_ns = Namespace(
-    "cert-manager-namespace",
-    metadata={"name": "cert-manager"},
-    opts=pulumi.ResourceOptions(provider=k8s_provider)
-)
-
-cert_manager = Chart(
-    "cert-manager",
-    ChartOpts(
-        chart="cert-manager",
-        version="v1.14.4",
-        namespace="cert-manager",
-        fetch_opts=FetchOpts(
-            repo="https://charts.jetstack.io",
-        ),
-        values={
-            "installCRDs": True,
-        }
-    ),
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[cert_manager_ns])
-)
-
-# Create ClusterIssuer for Let's Encrypt (as YAML for better handling)
-lets_encrypt_issuer_yaml = ConfigFile(
-    "letsencrypt-issuer",
-    file="letsencrypt-issuer.yaml",
-    opts=pulumi.ResourceOptions(provider=k8s_provider, depends_on=[cert_manager])
-)
+lets_encrypt_issuer_yaml = setup_cert_manager(k8s_provider)
 
 
 api_deployment = ConfigFile(
